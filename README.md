@@ -14,20 +14,21 @@ I rebuilt an older desktop into a Proxmox VE server and use it to host:
 ---
 
 ## 🧱 Hardware Overview
-
-- Repurposed desktop converted into a 24/7 homelab server
+- Repurposed desktop converted into a 24/7 homelab server  
 - Replaced the **motherboard** and **GPU** to fix instability and extend the life of the system.
-Specs:
-CPU:Intel Core i3-6100 (2C/4T, Skylake)
-GPU:NVIDIA GTX 1050 Ti
-Motherboard: ASUS H110M-A/M.2 (LGA1151, DDR4, mATX)
-RAM:16GB
-Storage:
-1× SSD for Proxmox VE + VM disks
-2× 1 TB HDDs for data, media, server files, and backups
-Hypervisor:Proxmox VE (LXC + VM mix)
 
----
+**Specs:**
+
+- **CPU:** Intel Core i3-6100 (2C/4T, Skylake)
+- **GPU:** NVIDIA GTX 1050 Ti
+- **Motherboard:** ASUS H110M-A/M.2 (LGA1151, DDR4, mATX)
+- **RAM:** 16 GB
+- **Storage:**
+- 1× SSD for Proxmox VE + VM disks
+- 2× 1 TB HDDs for data, media, server files, and backups
+- **Hypervisor:** Proxmox VE (LXC + VM mix)
+
+
 
 ## 🖥️ Proxmox VE Setup
 
