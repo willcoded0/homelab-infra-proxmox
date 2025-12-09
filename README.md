@@ -8,7 +8,7 @@ I rebuilt an older desktop into a Proxmox VE server and use it to host:
 - Linux virtual machines (Kali, Gentoo testing, etc)
 - LXC containers
 - Game servers (e.g., Minecraft)
-- Web tools like Dynmap
+- Web tools (Dynmap)
 - Local AI / LLM inference workloads
 
 ---
