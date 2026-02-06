@@ -10,6 +10,7 @@ This repository documents the architecture, configuration, and operational pract
 
 - [Infrastructure Overview](#infrastructure-overview)
 - [Projects](#projects)
+  - [Secure Remote Access (Cloudflare Zero Trust)](#secure-remote-access-with-cloudflare-zero-trust)
   - [Network-Wide DNS Filtering (Pi-hole)](#network-wide-dns-filtering-with-pi-hole)
   - [Self-Hosted Photo Platform (Immich)](#self-hosted-photo-platform-with-immich)
   - [Local LLM Deployment (Ollama)](#local-llm-deployment)
@@ -54,6 +55,97 @@ Cloudflare Tunnel (Zero Trust)
 ---
 
 ## Projects
+
+### Secure Remote Access with Cloudflare Zero Trust
+
+Implemented secure remote access to Proxmox VE management interface using Cloudflare Tunnel and Zero Trust Access policies, enabling browser-based administration from any network without exposing ports or public IPs.
+
+#### Problem Statement
+
+Required secure remote access to Proxmox web UI for infrastructure management from external networks and mobile devices, without traditional VPN complexity or port forwarding security risks.
+
+#### Architecture
+
+| Layer | Component |
+|-------|-----------|
+| Tunnel | Cloudflare Tunnel (cloudflared) |
+| Access Control | Cloudflare Zero Trust Access |
+| Authentication | Email-based OTP |
+| Origin | Proxmox VE (self-signed TLS) |
+
+```
+Mobile / External Network
+         │
+         ▼
+   Cloudflare Edge
+   (Access Policy)
+         │
+         ▼
+   Cloudflare Tunnel
+   (Encrypted Channel)
+         │
+         ▼
+┌─────────────────────┐
+│   Proxmox VE Host   │
+│   (No open ports)   │
+│   (No public IP)    │
+└─────────────────────┘
+```
+
+#### Implementation Details
+
+**1. Tunnel Configuration**
+
+Installed and configured `cloudflared` daemon on Proxmox host:
+- Created persistent named tunnel
+- Configured `/etc/cloudflared/config.yml` for service routing
+- Enabled systemd service for automatic startup
+
+**2. DNS and Application Routing**
+
+Configured multi-service routing through single tunnel:
+- `pve.batmap.win` → Proxmox Web UI (port 8006)
+- `photos.batmap.win` → Immich photo platform
+- `ssh.batmap.win` → SSH access
+
+Resolved DNS configuration issues:
+- Eliminated Cloudflare Error 1000 (prohibited IP) by removing direct A records
+- Configured CNAME records pointing to tunnel UUID
+- Set up Published Application Routes for HTTP service exposure
+
+**3. TLS and Protocol Handling**
+
+Proxmox uses self-signed certificates, requiring specific tunnel configuration:
+- Enabled `noTLSVerify` for origin connection
+- Maintained end-to-end encryption (Cloudflare Edge → Tunnel → Origin)
+- Diagnosed and resolved 502 Bad Gateway errors from protocol mismatches
+
+**4. Zero Trust Access Policy**
+
+Configured Cloudflare Access for authentication:
+- Created self-hosted application definition
+- Implemented email-allowlist access policy
+- Configured session duration and security settings
+
+#### Security Model
+
+Three-layer defense in depth:
+
+| Layer | Protection |
+|-------|------------|
+| Cloudflare Tunnel | Origin IP hidden, no inbound ports |
+| Cloudflare Access | Email-authenticated, policy-enforced |
+| Proxmox Auth | Username/password + optional TOTP |
+
+#### Results
+
+- Browser-based Proxmox access from any network including mobile
+- Zero exposed ports or public IP addresses
+- Cloudflare-protected traffic path with DDoS mitigation
+- Centralized access logging and session management
+- Infrastructure manageable during travel or emergencies
+
+---
 
 ### Network-Wide DNS Filtering with Pi-hole
 
@@ -272,12 +364,12 @@ Design decisions:
 |----------|--------|
 | Virtualization | Proxmox VE, LXC containers, KVM, GPU passthrough |
 | Linux Administration | systemd, filesystem management, permission models, process debugging |
-| Networking | DNS architecture, DHCP, IPv4/IPv6, Cloudflare Zero Trust |
+| Networking | DNS architecture, DHCP, IPv4/IPv6, reverse proxy, TLS/SSL |
+| Security | Cloudflare Zero Trust, Access policies, tunnel configuration, defense in depth |
 | Storage | ZFS pool management, LVM, bind mounts, data recovery |
 | Containers | Docker, Docker Compose, container orchestration |
 | Databases | PostgreSQL administration, data integrity, backup/recovery |
-| Security | Unprivileged containers, AppArmor, network segmentation |
-| Troubleshooting | Log analysis, filesystem repair, performance diagnosis |
+| Troubleshooting | Log analysis, filesystem repair, performance diagnosis, network debugging |
 
 ---
 
