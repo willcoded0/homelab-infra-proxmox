@@ -2,7 +2,7 @@
 
 Notes and docs for my home server. It's a single Proxmox VE node on consumer hardware running KVM VMs, LXC containers, and Docker workloads. This repo tracks what I built, why, what broke, and how I fixed it.
 
-*Last updated: October 2026, after a full read-only audit of the host.*
+*Last updated: October 2026.*
 
 ## At a glance
 
@@ -12,7 +12,7 @@ Notes and docs for my home server. It's a single Proxmox VE node on consumer har
 | CPU / RAM | AMD Ryzen 7 5700X3D (8C/16T, AMD-V) · 32 GB |
 | GPU | NVIDIA RTX 4070, bound to `vfio-pci` and passed through to a VM |
 | VMs (KVM) | GPU inference VM, plus an isolated CCDC-style security lab |
-| Containers | LXC for lightweight Linux services (mostly unprivileged), Docker Compose for app stacks |
+| Containers | LXC for lightweight Linux services, Docker Compose for app stacks |
 | Storage | 2 TB NVMe LVM-thin pool for guest disks · SATA SSD for the host OS · 1 TB HDD for media/backups |
 | Remote access | Cloudflare Tunnel + Cloudflare Access (no inbound ports) · Tailscale for private admin |
 
@@ -133,17 +133,6 @@ HDD 1 TB   ── media + directory storage used for backups
 - Scheduled `vzdump` snapshot-mode backups to the HDD (zstd, keep-last retention)
 - LVM snapshot baselines for the lab VMs
 - Runbook for thin-pool exhaustion (above)
-
-## Audit + roadmap
-
-In October 2026 I ran a full read-only audit of the host (hardware, storage, networking, services, security posture) and turned the findings into a to-do list. Honest priorities:
-
-1. **Backups:** extend scheduled backups to all important guests, add an offsite copy, alert on failed jobs, and actually test restores.
-2. **Storage:** clean up a stale/inactive default `local-lvm` pool left over from an earlier layout, and add capacity monitoring on the HDD.
-3. **Host firewall:** move to deny-by-default rules on the host (carefully, with console access available).
-4. **Least privilege:** move remaining privileged/unconfined containers toward unprivileged, and run tunnel services as non-root.
-5. **Isolation:** consider moving Docker off the hypervisor into a dedicated VM.
-6. **Segmentation:** VLAN-aware bridging for the home network (the lab is currently isolated by a separate bridge, not VLANs).
 
 ## Related
 
